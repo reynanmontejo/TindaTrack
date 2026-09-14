@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "TindaTrack",
+    "slug": "tindatrack",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "tindatrack",
+    "userInterfaceStyle": "light",
+    "android": {
+      "package": "com.tindatrack.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#E7F2E9"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.tindatrack.app",
+      "supportsTablet": true
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow TindaTrack to use a product photo to make products easier to recognize.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
