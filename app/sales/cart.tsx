@@ -55,7 +55,7 @@ export default function CartScreen() {
                   <ProductAvatar name={item.product.name} imageUri={item.product.imageUri} />
                   <View style={styles.grow}>
                     <Text style={styles.name}>{item.product.name}</Text>
-                    <Text style={styles.unit}>{formatMoney(item.product.sellingPriceCents)} each</Text>
+                    <Text style={styles.unit}>{formatMoney(item.product.sellingPriceCents)} per {item.product.unitName}</Text>
                   </View>
                   <Text style={styles.subtotal}>{formatMoney(item.product.sellingPriceCents * item.quantity)}</Text>
                 </View>

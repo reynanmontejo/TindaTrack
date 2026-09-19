@@ -59,9 +59,11 @@ export default function ProductDetailsScreen() {
       </View>
 
       <Card style={styles.infoCard}>
-        <InfoRow label="Items in stock" value={String(product.currentStock)} />
-        <InfoRow label="Bought for" value={formatMoney(product.costPriceCents)} />
-        <InfoRow label="Selling price" value={formatMoney(product.sellingPriceCents)} />
+        <InfoRow label={`${product.unitName} in stock`} value={String(product.currentStock)} />
+        <InfoRow label={`Cost per ${product.unitName}`} value={formatMoney(product.costPriceCents)} />
+        <InfoRow label={`Sell per ${product.unitName}`} value={formatMoney(product.sellingPriceCents)} />
+        {product.unitsPerPack > 1 ? <InfoRow label={`${product.unitName} per ${product.packName}`} value={String(product.unitsPerPack)} /> : null}
+        {product.category ? <InfoRow label="Category" value={product.category} /> : null}
         <InfoRow label="Low-stock alert at" value={String(product.lowStockLevel)} last />
       </Card>
 

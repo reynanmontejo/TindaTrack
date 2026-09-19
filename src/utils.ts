@@ -55,6 +55,11 @@ export function parseMoneyToCents(value: string): number {
   return Number.isFinite(amount) ? Math.round(amount * 100) : 0;
 }
 
+export function calculateUnitCost(packCostCents: number, unitsPerPack: number): number {
+  if (!Number.isInteger(unitsPerPack) || unitsPerPack <= 0) return 0;
+  return Math.round(packCostCents / unitsPerPack);
+}
+
 export function calculateChangePercent(current: number, previous: number): number | null {
   if (previous === 0) return null;
   return Math.round(((current - previous) / previous) * 100);

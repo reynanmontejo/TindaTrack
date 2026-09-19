@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { AppScreen } from '@/components/AppScreen';
 import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/EmptyState';
-import { ExtendedFab } from '@/components/ExtendedFab';
+import { QuickActionFab } from '@/components/QuickActionFab';
 import { MetricCard } from '@/components/MetricCard';
 import { ProductAvatar } from '@/components/ProductAvatar';
 import { SectionHeader } from '@/components/SectionHeader';
@@ -69,6 +69,19 @@ export default function HomeScreen() {
           </View>
           <MaterialCommunityIcons name="chevron-right" size={26} color={colors.forest} />
         </Pressable>
+
+        <View style={styles.toolsRow}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Open expenses and cash summary" onPress={() => router.push('/finance')} style={({ pressed }) => [styles.toolCard, pressed && styles.pressed]}>
+            <View style={styles.toolIcon}><MaterialCommunityIcons name="cash-minus" size={25} color={colors.forest} /></View>
+            <Text style={styles.toolTitle}>Expenses & Cash</Text>
+            <Text style={styles.toolHelp}>See profit after expenses</Text>
+          </Pressable>
+          <Pressable accessibilityRole="button" accessibilityLabel="Open utang records" onPress={() => router.push('/utang')} style={({ pressed }) => [styles.toolCard, pressed && styles.pressed]}>
+            <View style={styles.toolIcon}><MaterialCommunityIcons name="account-cash-outline" size={25} color={colors.forest} /></View>
+            <Text style={styles.toolTitle}>Utang</Text>
+            <Text style={styles.toolHelp}>Track balances and payments</Text>
+          </Pressable>
+        </View>
 
         <View style={styles.sectionGap}>
           <SectionHeader title="Recent Sales" />
@@ -141,7 +154,10 @@ export default function HomeScreen() {
           </View>
         </Pressable>
       </AppScreen>
-      <ExtendedFab onPress={() => router.push('/(tabs)/sell')} />
+      <QuickActionFab
+        onAddSale={() => router.push('/(tabs)/sell')}
+        onAddStock={() => router.push('/stock/add')}
+      />
     </View>
   );
 }
@@ -171,6 +187,11 @@ const styles = StyleSheet.create({
   alertIcon: { width: 46, height: 46, borderRadius: 23, backgroundColor: colors.sage, alignItems: 'center', justifyContent: 'center' },
   grow: { flex: 1 },
   alertTitle: { color: colors.text, fontSize: 16, fontWeight: '700' },
+  toolsRow: { flexDirection: 'row', gap: spacing.sm },
+  toolCard: { flex: 1, minHeight: 126, padding: spacing.md, borderRadius: radii.md, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, justifyContent: 'center', gap: spacing.xs },
+  toolIcon: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.mint, alignItems: 'center', justifyContent: 'center', marginBottom: spacing.xs },
+  toolTitle: { color: colors.text, fontSize: 15, fontWeight: '800' },
+  toolHelp: { color: colors.muted, fontSize: 12, lineHeight: 17 },
   helper: { color: colors.muted, fontSize: 14, lineHeight: 19 },
   sectionGap: { gap: spacing.sm },
   list: { gap: spacing.sm },

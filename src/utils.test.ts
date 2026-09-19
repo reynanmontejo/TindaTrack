@@ -1,4 +1,4 @@
-import { calculateChangePercent, parseMoneyToCents, shiftDateKey } from './utils';
+import { calculateChangePercent, calculateUnitCost, parseMoneyToCents, shiftDateKey } from './utils';
 
 describe('business utilities', () => {
   it('converts peso input to integer centavos', () => {
@@ -12,5 +12,11 @@ describe('business utilities', () => {
 
   it('shifts local date keys safely', () => {
     expect(shiftDateKey('2026-09-14', -1)).toBe('2026-09-13');
+  });
+
+  it('calculates tingi cost from a pack price', () => {
+    expect(calculateUnitCost(24000, 24)).toBe(1000);
+    expect(calculateUnitCost(10000, 3)).toBe(3333);
+    expect(calculateUnitCost(10000, 0)).toBe(0);
   });
 });

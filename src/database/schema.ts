@@ -1,14 +1,15 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 
 export async function migrateDatabase(db: SQLiteDatabase): Promise<void> {
   await db.execAsync('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');
   const current = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
-  if ((current?.user_version ?? 0) >= SCHEMA_VERSION) return;
+  const currentVersion = current?.user_version ?? 0;
+  if (currentVersion >= SCHEMA_VERSION) return;
 
   await db.withExclusiveTransactionAsync(async (txn) => {
-    await txn.execAsync(`
+    if (currentVersion < 1) await txn.execAsync(`
       CREATE TABLE IF NOT EXISTS app_settings (
         key TEXT PRIMARY KEY NOT NULL,
         value TEXT NOT NULL
@@ -77,6 +78,50 @@ export async function migrateDatabase(db: SQLiteDatabase): Promise<void> {
         ON sale_items(sale_id);
       CREATE INDEX IF NOT EXISTS idx_stock_movements_product_date
         ON stock_movements(product_id, created_at DESC);
+    `);
+    if (currentVersion < 2) await txn.execAsync(`
+      ALTER TABLE products ADD COLUMN units_per_pack INTEGER NOT NULL DEFAULT 1 CHECK (units_per_pack > 0);
+      ALTER TABLE products ADD COLUMN pack_name TEXT NOT NULL DEFAULT 'pack';
+      ALTER TABLE products ADD COLUMN unit_name TEXT NOT NULL DEFAULT 'piece';
+
+      CREATE TABLE IF NOT EXISTS expenses (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        description TEXT NOT NULL,
+        category TEXT NOT NULL DEFAULT 'Other',
+        amount_cents INTEGER NOT NULL CHECK (amount_cents > 0),
+        business_date TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS cash_counts (
+        business_date TEXT PRIMARY KEY NOT NULL,
+        actual_cash_cents INTEGER NOT NULL CHECK (actual_cash_cents >= 0),
+        updated_at TEXT NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS credit_accounts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        customer_name TEXT NOT NULL,
+        amount_cents INTEGER NOT NULL CHECK (amount_cents > 0),
+        paid_cents INTEGER NOT NULL DEFAULT 0 CHECK (paid_cents >= 0),
+        note TEXT NOT NULL DEFAULT '',
+        business_date TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS credit_payments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        credit_id INTEGER NOT NULL REFERENCES credit_accounts(id) ON DELETE CASCADE,
+        amount_cents INTEGER NOT NULL CHECK (amount_cents > 0),
+        note TEXT NOT NULL DEFAULT '',
+        created_at TEXT NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_expenses_date ON expenses(business_date DESC);
+      CREATE INDEX IF NOT EXISTS idx_credit_accounts_date ON credit_accounts(business_date DESC);
+      CREATE INDEX IF NOT EXISTS idx_credit_payments_credit ON credit_payments(credit_id, created_at DESC);
     `);
     await txn.execAsync(`PRAGMA user_version = ${SCHEMA_VERSION};`);
   });

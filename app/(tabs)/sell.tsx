@@ -7,19 +7,20 @@ import { AppScreen } from '@/components/AppScreen';
 import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/EmptyState';
 import { ProductAvatar } from '@/components/ProductAvatar';
+import { QuantityStepper } from '@/components/QuantityStepper';
 import { useAppData } from '@/data/AppDataContext';
 import { colors, radii, spacing } from '@/theme';
 import type { Product } from '@/types';
 import { formatMoney } from '@/utils';
 
 export default function SellScreen() {
-  const { service, revision, addToCart, cart, cartCount, cartTotalCents } = useAppData();
+  const { service, revision, addToCart, setCartQuantity, removeFromCart, cart, cartCount, cartTotalCents } = useAppData();
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState('');
 
   const load = useCallback(() => {
     if (!service) return;
-    service.getProducts(search).then(setProducts).catch(console.error);
+    service.getProducts(search, 'ALL', 'ALL', search ? 'NAME' : 'MOST_SOLD').then(setProducts).catch(console.error);
   }, [search, service]);
 
   useFocusEffect(useCallback(() => {
@@ -43,7 +44,7 @@ export default function SellScreen() {
     <AppScreen contentContainerStyle={styles.content}>
       <View>
         <Text style={styles.title}>Sell Products</Text>
-        <Text style={styles.subtitle}>Tap Add beside each product the customer is buying.</Text>
+        <Text style={styles.subtitle}>Choose products, then set the quantity with the + and − buttons.</Text>
       </View>
       <View style={styles.search}>
         <MaterialCommunityIcons name="magnify" size={24} color={colors.muted} />
@@ -63,33 +64,56 @@ export default function SellScreen() {
           {products.map((product) => {
             const selected = cart.find((item) => item.product.id === product.id)?.quantity ?? 0;
             return (
-              <Card key={product.id} style={styles.productRow}>
-                <ProductAvatar name={product.name} imageUri={product.imageUri} />
-                <View style={styles.grow}>
-                  <Text style={styles.productName}>{product.name}</Text>
-                  <Text style={styles.productInfo}>{formatMoney(product.sellingPriceCents)} · {product.currentStock} left</Text>
-                  {selected > 0 ? <Text style={styles.added}>{selected} in current sale</Text> : null}
+              <Card key={product.id} style={[styles.productCard, selected > 0 && styles.productSelected]}>
+                <View style={styles.productRow}>
+                  <ProductAvatar name={product.name} imageUri={product.imageUri} />
+                  <View style={styles.grow}>
+                    <Text style={styles.productName}>{product.name}</Text>
+                    <Text style={styles.productInfo}>{formatMoney(product.sellingPriceCents)} per {product.unitName} · {product.currentStock} left</Text>
+                    {selected > 0 ? <Text style={styles.added}>Added to this sale</Text> : null}
+                  </View>
+                  {selected === 0 ? (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Add ${product.name} to sale`}
+                      disabled={product.currentStock === 0}
+                      onPress={() => add(product)}
+                      style={({ pressed }) => [
+                        styles.addButton,
+                        product.currentStock === 0 && styles.unavailable,
+                        pressed && styles.pressed,
+                      ]}
+                    >
+                      {product.currentStock === 0 ? (
+                        <Text style={styles.unavailableText}>Out</Text>
+                      ) : (
+                        <>
+                          <MaterialCommunityIcons name="plus" size={20} color={colors.forest} />
+                          <Text style={styles.addText}>Add</Text>
+                        </>
+                      )}
+                    </Pressable>
+                  ) : null}
                 </View>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={`Add ${product.name} to sale`}
-                  disabled={product.currentStock === 0}
-                  onPress={() => add(product)}
-                  style={({ pressed }) => [
-                    styles.addButton,
-                    product.currentStock === 0 && styles.unavailable,
-                    pressed && styles.pressed,
-                  ]}
-                >
-                  {product.currentStock === 0 ? (
-                    <Text style={styles.unavailableText}>Unavailable</Text>
-                  ) : (
-                    <>
-                      <MaterialCommunityIcons name="plus" size={20} color={colors.forest} />
-                      <Text style={styles.addText}>Add</Text>
-                    </>
-                  )}
-                </Pressable>
+                {selected > 0 ? (
+                  <View style={styles.quantityRow}>
+                    <Text style={styles.quantityLabel}>Quantity</Text>
+                    <QuantityStepper
+                      value={selected}
+                      minimum={1}
+                      maximum={product.currentStock}
+                      onChange={(value) => setCartQuantity(product.id, value)}
+                    />
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Remove ${product.name} from sale`}
+                      onPress={() => removeFromCart(product.id)}
+                      style={styles.remove}
+                    >
+                      <MaterialCommunityIcons name="trash-can-outline" size={21} color={colors.danger} />
+                    </Pressable>
+                  </View>
+                ) : null}
               </Card>
             );
           })}
@@ -114,7 +138,7 @@ export default function SellScreen() {
               <Text style={styles.cartTotal}>{formatMoney(cartTotalCents)}</Text>
             </View>
           </View>
-          <AppButton label="View Sale" onPress={() => router.push('/sales/cart')} style={styles.viewButton} />
+          <AppButton label="Review & Confirm" icon="arrow-right" onPress={() => router.push('/sales/cart')} style={styles.viewButton} />
         </View>
       ) : null}
     </AppScreen>
@@ -129,7 +153,9 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, fontSize: 17, color: colors.text },
   list: { gap: spacing.sm },
   section: { fontSize: 20, fontWeight: '800', color: colors.text, marginBottom: spacing.xs },
-  productRow: { padding: spacing.sm, minHeight: 76, flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  productCard: { padding: spacing.sm, gap: spacing.sm },
+  productSelected: { borderColor: colors.sage, backgroundColor: colors.mint },
+  productRow: { minHeight: 60, flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   grow: { flex: 1 },
   productName: { color: colors.text, fontSize: 17, fontWeight: '800' },
   productInfo: { color: colors.muted, fontSize: 14, marginTop: 2 },
@@ -138,6 +164,9 @@ const styles = StyleSheet.create({
   addText: { color: colors.forest, fontSize: 16, fontWeight: '800' },
   unavailable: { borderColor: colors.border, backgroundColor: '#F0F2F0' },
   unavailableText: { color: colors.muted, fontSize: 12, fontWeight: '600' },
+  quantityRow: { borderTopWidth: 1, borderTopColor: colors.sage, paddingTop: spacing.sm, flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  quantityLabel: { flex: 1, color: colors.text, fontSize: 15, fontWeight: '700' },
+  remove: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   pressed: { opacity: 0.7 },
   cartBar: { padding: spacing.md, backgroundColor: colors.mint, borderRadius: radii.md, borderWidth: 1, borderColor: colors.sage, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md },
   cartInfo: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },

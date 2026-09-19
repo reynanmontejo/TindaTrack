@@ -21,6 +21,9 @@ export default function StockScreen() {
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<Filter>('ALL');
+  const [category, setCategory] = useState('ALL');
+  const [categories, setCategories] = useState<string[]>([]);
+  const [sort, setSort] = useState<'NAME' | 'STOCK_LOW' | 'PRICE_LOW' | 'MOST_SOLD'>('NAME');
 
   useEffect(() => {
     if (params.filter === 'LOW' || params.filter === 'OUT') setFilter(params.filter);
@@ -28,8 +31,14 @@ export default function StockScreen() {
 
   const load = useCallback(() => {
     if (!service) return;
-    service.getProducts(search, filter).then(setProducts).catch(console.error);
-  }, [filter, search, service]);
+    Promise.all([
+      service.getProducts(search, filter, category, sort),
+      service.getProductCategories(),
+    ]).then(([items, nextCategories]) => {
+      setProducts(items);
+      setCategories(nextCategories);
+    }).catch(console.error);
+  }, [category, filter, search, service, sort]);
 
   useFocusEffect(useCallback(() => {
     load();
@@ -71,7 +80,30 @@ export default function StockScreen() {
           </Pressable>
         ))}
       </View>
+      {categories.length ? (
+        <View style={styles.filterGroup}>
+          <Text style={styles.filterLabel}>Category</Text>
+          <View style={styles.filters}>
+            {['ALL', ...categories].map((item) => (
+              <Pressable key={item} onPress={() => setCategory(item)} style={[styles.smallFilter, category === item && styles.filterActive]}>
+                <Text style={[styles.filterText, category === item && styles.filterTextActive]}>{item === 'ALL' ? 'All Categories' : item}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      ) : null}
+      <View style={styles.filterGroup}>
+        <Text style={styles.filterLabel}>Sort by</Text>
+        <View style={styles.filters}>
+          {([['NAME', 'Name'], ['STOCK_LOW', 'Lowest Stock'], ['PRICE_LOW', 'Lowest Price'], ['MOST_SOLD', 'Most Sold']] as const).map(([value, label]) => (
+            <Pressable key={value} onPress={() => setSort(value)} style={[styles.smallFilter, sort === value && styles.filterActive]}>
+              <Text style={[styles.filterText, sort === value && styles.filterTextActive]}>{label}</Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
       <AppButton label="Add New Product" icon="plus-circle-outline" variant="secondary" onPress={() => router.push('/products/add')} />
+      <AppButton label="View Hidden Products" icon="eye-off-outline" variant="text" onPress={() => router.push('/products/hidden')} />
 
       {products.length ? (
         <View style={styles.list}>
@@ -87,7 +119,7 @@ export default function StockScreen() {
                 <ProductAvatar name={product.name} imageUri={product.imageUri} />
                 <View style={styles.grow}>
                   <Text style={styles.productName}>{product.name}</Text>
-                  <Text style={styles.productInfo}>{product.currentStock} left · {formatMoney(product.sellingPriceCents)}</Text>
+                  <Text style={styles.productInfo}>{product.currentStock} {product.unitName} left · {formatMoney(product.sellingPriceCents)}</Text>
                   <Text style={styles.helper}>Tap to view or update</Text>
                 </View>
                 <View style={styles.trailing}>
@@ -102,7 +134,7 @@ export default function StockScreen() {
         <EmptyState
           icon="package-variant"
           title="No products found"
-          message={search || filter !== 'ALL' ? 'Try another search or stock filter.' : 'Add your first product to begin tracking stock.'}
+          message={search || filter !== 'ALL' || category !== 'ALL' ? 'Try another search, category, or stock filter.' : 'Add your first product to begin tracking stock.'}
         />
       )}
     </AppScreen>
@@ -115,8 +147,11 @@ const styles = StyleSheet.create({
   search: { minHeight: 52, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.md, borderRadius: radii.md, backgroundColor: colors.white, borderWidth: 1.5, borderColor: colors.border },
   searchInput: { flex: 1, fontSize: 17, color: colors.text },
   filters: { flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' },
+  filterGroup: { gap: spacing.xs },
+  filterLabel: { color: colors.muted, fontSize: 13, fontWeight: '700' },
   filter: { minHeight: 42, paddingHorizontal: spacing.md, alignItems: 'center', justifyContent: 'center', borderRadius: radii.pill, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white },
   filterActive: { backgroundColor: colors.forest, borderColor: colors.forest },
+  smallFilter: { minHeight: 38, paddingHorizontal: spacing.md, alignItems: 'center', justifyContent: 'center', borderRadius: radii.pill, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white },
   filterText: { color: colors.text, fontSize: 14, fontWeight: '700' },
   filterTextActive: { color: colors.white },
   list: { gap: spacing.sm },

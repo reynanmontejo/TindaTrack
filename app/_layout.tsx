@@ -24,7 +24,13 @@ export default function RootLayout() {
         <Stack.Screen name="sales/cart" options={{ title: 'Your Sale' }} />
         <Stack.Screen name="sales/success" options={{ headerShown: false, presentation: 'modal' }} />
         <Stack.Screen name="sales/[id]" options={{ title: 'Sale Details' }} />
+        <Stack.Screen name="sales/edit" options={{ title: 'Edit Sale' }} />
+        <Stack.Screen name="stock/add" options={{ title: 'Choose Product' }} />
+        <Stack.Screen name="finance" options={{ title: 'Expenses & Cash' }} />
+        <Stack.Screen name="utang" options={{ title: 'Utang' }} />
+        <Stack.Screen name="usability-test" options={{ title: 'Usability Test' }} />
         <Stack.Screen name="products/add" options={{ title: 'Add Product' }} />
+        <Stack.Screen name="products/hidden" options={{ title: 'Hidden Products' }} />
         <Stack.Screen name="products/[id]/index" options={{ title: 'Product Details' }} />
         <Stack.Screen name="products/[id]/edit" options={{ title: 'Edit Product' }} />
         <Stack.Screen name="products/[id]/restock" options={{ title: 'Add Stock' }} />

@@ -16,6 +16,9 @@ export interface Product {
   sellingPriceCents: number;
   currentStock: number;
   lowStockLevel: number;
+  unitsPerPack: number;
+  packName: string;
+  unitName: string;
   isArchived: boolean;
   createdAt: string;
   updatedAt: string;
@@ -30,6 +33,65 @@ export interface ProductInput {
   sellingPriceCents: number;
   currentStock: number;
   lowStockLevel: number;
+  unitsPerPack?: number;
+  packName?: string;
+  unitName?: string;
+}
+
+export interface Expense {
+  id: number;
+  description: string;
+  category: string;
+  amountCents: number;
+  businessDate: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ExpenseInput {
+  description: string;
+  category: string;
+  amountCents: number;
+  businessDate: string;
+}
+
+export interface CreditAccount {
+  id: number;
+  customerName: string;
+  amountCents: number;
+  paidCents: number;
+  balanceCents: number;
+  note: string;
+  businessDate: string;
+  status: 'UNPAID' | 'PARTIAL' | 'PAID';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreditInput {
+  customerName: string;
+  amountCents: number;
+  note: string;
+  businessDate: string;
+}
+
+export interface CreditPayment {
+  id: number;
+  creditId: number;
+  amountCents: number;
+  note: string;
+  createdAt: string;
+}
+
+export interface CashSummary {
+  date: string;
+  salesCents: number;
+  expenseCents: number;
+  estimatedProfitCents: number;
+  expectedCashCents: number;
+  netAfterExpensesCents: number;
+  actualCashCents: number | null;
+  cashDifferenceCents: number | null;
 }
 
 export interface CartItem {
@@ -104,4 +166,26 @@ export interface InsightsData {
   highestDay: { date: string; totalCents: number } | null;
   lowestDay: { date: string; totalCents: number } | null;
   daily: Array<{ date: string; totalCents: number }>;
+  topProducts: ProductInsight[];
+  slowProducts: ProductInsight[];
+  restockSuggestions: ProductInsight[];
+}
+
+export interface ProductInsight {
+  productId: number;
+  name: string;
+  unitsSold: number;
+  revenueCents: number;
+  profitCents: number;
+  currentStock: number;
+  averageUnitsPerDay: number;
+  estimatedDaysLeft: number | null;
+}
+
+export interface BackupPayload {
+  format: 'TINDATRACK_BACKUP';
+  version: number;
+  exportedAt: string;
+  tables: Record<string, Array<Record<string, unknown>>>;
+  files?: Record<string, { base64: string; extension: string }>;
 }

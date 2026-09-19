@@ -2,7 +2,7 @@ import { openDatabaseAsync } from 'expo-sqlite';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { migrateDatabase } from '@/database/schema';
 import { TindaTrackService } from '@/database/service';
-import type { CartItem, Product, ProductInput } from '@/types';
+import type { BackupPayload, CartItem, Product, ProductInput } from '@/types';
 
 interface AppDataValue {
   ready: boolean;
@@ -18,15 +18,19 @@ interface AppDataValue {
   addProduct: (input: ProductInput) => Promise<number>;
   updateProduct: (id: number, input: Omit<ProductInput, 'currentStock'>) => Promise<void>;
   archiveProduct: (id: number) => Promise<void>;
+  unarchiveProduct: (id: number) => Promise<void>;
   restockProduct: (id: number, quantity: number, costPriceCents: number) => Promise<void>;
   adjustStock: (id: number, actualStock: number, reason: string) => Promise<void>;
   completeSale: () => Promise<number>;
+  updateSale: (saleId: number, items: CartItem[]) => Promise<void>;
   undoSale: (saleId: number) => Promise<void>;
   saveDailyNote: (date: string, note: string) => Promise<void>;
   addToCart: (product: Product) => void;
   setCartQuantity: (productId: number, quantity: number) => void;
   removeFromCart: (productId: number) => void;
   clearCart: () => void;
+  refreshData: () => void;
+  restoreBackup: (payload: BackupPayload) => Promise<void>;
 }
 
 const AppDataContext = createContext<AppDataValue | null>(null);
@@ -101,6 +105,12 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     changed();
   }, [changed, service]);
 
+  const unarchiveProduct = useCallback(async (id: number) => {
+    if (!service) throw new Error('Database is not ready.');
+    await service.unarchiveProduct(id);
+    changed();
+  }, [changed, service]);
+
   const restockProduct = useCallback(async (id: number, quantity: number, costPriceCents: number) => {
     if (!service) throw new Error('Database is not ready.');
     await service.restockProduct(id, quantity, costPriceCents);
@@ -124,6 +134,12 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const undoSale = useCallback(async (saleId: number) => {
     if (!service) throw new Error('Database is not ready.');
     await service.undoSale(saleId);
+    changed();
+  }, [changed, service]);
+
+  const updateSale = useCallback(async (saleId: number, items: CartItem[]) => {
+    if (!service) throw new Error('Database is not ready.');
+    await service.updateSale(saleId, items);
     changed();
   }, [changed, service]);
 
@@ -159,6 +175,18 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const clearCart = useCallback(() => setCart([]), []);
+  const restoreBackup = useCallback(async (payload: BackupPayload) => {
+    if (!service) throw new Error('Database is not ready.');
+    await service.restoreBackup(payload);
+    const [setup, name] = await Promise.all([
+      service.getSetting('setup_complete'),
+      service.getSetting('store_name'),
+    ]);
+    setSetupComplete(setup === 'true');
+    setStoreName(name || 'My Store');
+    setCart([]);
+    changed();
+  }, [changed, service]);
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const cartTotalCents = cart.reduce(
     (sum, item) => sum + item.product.sellingPriceCents * item.quantity,
@@ -179,20 +207,24 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
     addProduct,
     updateProduct,
     archiveProduct,
+    unarchiveProduct,
     restockProduct,
     adjustStock,
     completeSale,
+    updateSale,
     undoSale,
     saveDailyNote,
     addToCart,
     setCartQuantity,
     removeFromCart,
     clearCart,
+    refreshData: changed,
+    restoreBackup,
   }), [
     addProduct, addToCart, adjustStock, archiveProduct, cart, cartCount, cartTotalCents,
     clearCart, completeSale, completeSetup, ready, removeFromCart, restockProduct, revision,
-    saveDailyNote, service, setCartQuantity, setupComplete, storeName, undoSale,
-    updateProduct, updateStoreName,
+    saveDailyNote, service, setCartQuantity, setupComplete, storeName, undoSale, updateSale,
+    updateProduct, updateStoreName, unarchiveProduct, changed, restoreBackup,
   ]);
 
   return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>;

@@ -7,7 +7,7 @@ import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/EmptyState';
 import { useAppData } from '@/data/AppDataContext';
 import { colors, radii, spacing } from '@/theme';
-import type { InsightsData } from '@/types';
+import type { InsightsData, ProductInsight } from '@/types';
 import { formatDayName, formatMoney, formatShortDate } from '@/utils';
 
 type PeriodDays = 7 | 30 | 90;
@@ -132,8 +132,52 @@ export default function InsightsScreen() {
           {data?.changePercent == null ? 'No previous period' : `${data.changePercent >= 0 ? '↑' : '↓'} ${Math.abs(data.changePercent)}%`}
         </Text>
       </Card>
+      <ProductInsightList
+        title="Best-selling products"
+        icon="star-circle-outline"
+        items={data?.topProducts ?? []}
+        empty="Record more sales to identify best sellers."
+        detail={(item) => `${item.unitsSold} sold · ${formatMoney(item.revenueCents)} sales · ${formatMoney(item.profitCents)} profit`}
+      />
+      <ProductInsightList
+        title="Slow-moving products"
+        icon="snail"
+        items={data?.slowProducts ?? []}
+        empty="No stocked products to review."
+        detail={(item) => `${item.unitsSold} sold · ${item.currentStock} still in stock`}
+      />
+      <ProductInsightList
+        title="Restock suggestions"
+        icon="package-variant-plus"
+        items={data?.restockSuggestions ?? []}
+        empty="No products need urgent restocking."
+        detail={(item) => item.estimatedDaysLeft === null ? `${item.currentStock} left · no recent sales rate` : `${item.currentStock} left · about ${item.estimatedDaysLeft} days remaining`}
+      />
       <Text style={styles.disclaimer}>Insights use completed sales only. Days without sales count as ₱0.</Text>
     </AppScreen>
+  );
+}
+
+function ProductInsightList({ title, icon, items, empty, detail }: {
+  title: string;
+  icon: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
+  items: ProductInsight[];
+  empty: string;
+  detail: (item: ProductInsight) => string;
+}) {
+  return (
+    <Card style={styles.productInsights}>
+      <View style={styles.productInsightHeader}>
+        <MaterialCommunityIcons name={icon} size={26} color={colors.forest} />
+        <Text style={styles.productInsightTitle}>{title}</Text>
+      </View>
+      {items.length ? items.map((item, index) => (
+        <View key={item.productId} style={[styles.productInsightRow, index === items.length - 1 && styles.productInsightLast]}>
+          <View style={styles.rank}><Text style={styles.rankText}>{index + 1}</Text></View>
+          <View style={styles.grow}><Text style={styles.productName}>{item.name}</Text><Text style={styles.productDetail}>{detail(item)}</Text></View>
+        </View>
+      )) : <Text style={styles.productDetail}>{empty}</Text>}
+    </Card>
   );
 }
 
@@ -173,4 +217,13 @@ const styles = StyleSheet.create({
   change: { color: colors.forest, fontSize: 15, fontWeight: '800' },
   down: { color: colors.amber },
   disclaimer: { color: colors.muted, fontSize: 12, lineHeight: 17, textAlign: 'center' },
+  productInsights: { gap: spacing.sm },
+  productInsightHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  productInsightTitle: { color: colors.text, fontSize: 18, fontWeight: '800' },
+  productInsightRow: { minHeight: 57, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, borderBottomWidth: 1, borderColor: colors.border },
+  productInsightLast: { borderBottomWidth: 0 },
+  rank: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.mint },
+  rankText: { color: colors.forest, fontSize: 13, fontWeight: '900' },
+  productName: { color: colors.text, fontSize: 15, fontWeight: '800' },
+  productDetail: { color: colors.muted, fontSize: 12, lineHeight: 17, marginTop: 2 },
 });

@@ -20,6 +20,8 @@ export function AppScreen({ children, scroll = true, contentContainerStyle }: Ap
   const content = scroll ? (
     <ScrollView
       keyboardShouldPersistTaps="handled"
+      keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+      automaticallyAdjustKeyboardInsets
       showsVerticalScrollIndicator={false}
       contentContainerStyle={[styles.content, contentContainerStyle]}
     >
@@ -31,7 +33,7 @@ export function AppScreen({ children, scroll = true, contentContainerStyle }: Ap
     <SafeAreaView style={styles.safe} edges={['top']}>
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         {content}
       </KeyboardAvoidingView>

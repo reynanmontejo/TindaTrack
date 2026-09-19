@@ -96,8 +96,13 @@ export default function SaleDetailScreen() {
 
       {sale.status === 'COMPLETED' ? (
         <>
+          <AppButton
+            label="Edit This Sale"
+            icon="square-edit-outline"
+            onPress={() => router.push({ pathname: '/sales/edit', params: { id: String(sale.id) } })}
+          />
           <AppButton label="Undo This Sale" icon="undo-variant" variant="secondary" onPress={undo} loading={undoing} />
-          <Text style={styles.undoHelp}>Restores the sold items to stock.</Text>
+          <Text style={styles.undoHelp}>Edit changes products or quantities. Undo restores all sold items to stock.</Text>
         </>
       ) : null}
       <AppButton label="Back to Sales History" variant="text" onPress={() => router.replace('/(tabs)/sales-history')} />
