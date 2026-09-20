@@ -64,10 +64,10 @@ export default function RestockScreen() {
         <Text style={styles.question}>How many are you adding?</Text>
         {product.unitsPerPack > 1 ? (
           <View style={styles.modeRow}>
-            <Pressable onPress={() => { setMode('UNIT'); setCost(String(product.costPriceCents / 100)); }} style={[styles.mode, mode === 'UNIT' && styles.modeActive]}>
+            <Pressable accessibilityRole="button" accessibilityState={{ selected: mode === 'UNIT' }} accessibilityLabel={`Add individual ${product.unitName}s`} onPress={() => { setMode('UNIT'); setCost(String(product.costPriceCents / 100)); }} style={[styles.mode, mode === 'UNIT' && styles.modeActive]}>
               <Text style={[styles.modeText, mode === 'UNIT' && styles.modeTextActive]}>{product.unitName}</Text>
             </Pressable>
-            <Pressable onPress={() => { setMode('PACK'); setCost(String((product.costPriceCents * product.unitsPerPack) / 100)); }} style={[styles.mode, mode === 'PACK' && styles.modeActive]}>
+            <Pressable accessibilityRole="button" accessibilityState={{ selected: mode === 'PACK' }} accessibilityLabel={`Add ${product.packName}s of ${product.unitsPerPack}`} onPress={() => { setMode('PACK'); setCost(String((product.costPriceCents * product.unitsPerPack) / 100)); }} style={[styles.mode, mode === 'PACK' && styles.modeActive]}>
               <Text style={[styles.modeText, mode === 'PACK' && styles.modeTextActive]}>{product.packName} × {product.unitsPerPack}</Text>
             </Pressable>
           </View>

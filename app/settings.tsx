@@ -1,5 +1,4 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { AppButton } from '@/components/AppButton';
@@ -48,7 +47,7 @@ export default function SettingsScreen() {
       setBackupBusy(true);
       const payload = await chooseBackupFile();
       if (!payload) return;
-      Alert.alert('Replace all current data?', 'Restoring will replace the products, sales, stock, expenses, utang, and notes currently on this phone.', [
+      Alert.alert('Replace all current data?', 'Restoring will replace the products, sales, stock, expenses, customer credit, and notes currently on this phone.', [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Restore Backup',
@@ -79,20 +78,15 @@ export default function SettingsScreen() {
         <MaterialCommunityIcons name="wifi-off" size={32} color={colors.forest} />
         <View style={styles.grow}>
           <Text style={styles.infoTitle}>Works Offline</Text>
-          <Text style={styles.infoText}>Products, sales, stock, expenses, utang, and notes are stored directly on this device.</Text>
+          <Text style={styles.infoText}>Products, sales, stock, expenses, customer credit, and notes are stored directly on this device.</Text>
         </View>
       </Card>
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Backup & Restore</Text>
-        <Text style={styles.infoText}>Backups include products, photos, sales, stock history, expenses, utang, and daily notes.</Text>
+        <Text style={styles.infoText}>Backups include products, photos, sales, stock history, expenses, customer credit, and daily notes.</Text>
         <AppButton label="Create Backup File" icon="cloud-upload-outline" onPress={createBackup} loading={backupBusy} />
         <AppButton label="Restore from Backup" icon="backup-restore" variant="secondary" onPress={chooseRestore} disabled={backupBusy} />
         <Text style={styles.caution}>Restore replaces the data currently stored on this phone. TindaTrack always asks for confirmation first.</Text>
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Usability Test</Text>
-        <Text style={styles.infoText}>Use the guided checklist with a real store owner before introducing the app in daily operations.</Text>
-        <AppButton label="Open Test Checklist" icon="clipboard-check-outline" variant="secondary" onPress={() => router.push('/usability-test')} />
       </View>
       <Card style={styles.info}>
         <MaterialCommunityIcons name="shield-check-outline" size={32} color={colors.forest} />
@@ -103,7 +97,7 @@ export default function SettingsScreen() {
       </Card>
       <View style={styles.about}>
         <Text style={styles.brand}>TindaTrack</Text>
-        <Text style={styles.version}>Version 1.1.0 · Expanded Offline MVP</Text>
+        <Text style={styles.version}>Version 1.1.1 · Friendly UI Update</Text>
       </View>
     </AppScreen>
   );
@@ -116,7 +110,7 @@ const styles = StyleSheet.create({
   grow: { flex: 1 },
   infoTitle: { color: colors.text, fontSize: 17, fontWeight: '800', marginBottom: spacing.xs },
   infoText: { color: colors.muted, fontSize: 14, lineHeight: 21 },
-  caution: { color: colors.amber, fontSize: 12, lineHeight: 18 },
+  caution: { color: colors.amber, fontSize: 14, lineHeight: 20 },
   about: { alignItems: 'center', paddingVertical: spacing.xl },
   brand: { color: colors.forest, fontSize: 24, fontWeight: '900' },
   version: { color: colors.muted, fontSize: 13, marginTop: spacing.xs },

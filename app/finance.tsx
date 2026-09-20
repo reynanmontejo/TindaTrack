@@ -116,7 +116,7 @@ export default function FinanceScreen() {
       <Card style={styles.cashCount}>
         <View>
           <Text style={styles.sectionTitle}>Count Today’s Cash</Text>
-          <Text style={styles.infoText}>Enter the cash physically in the drawer. Compare only after considering starting cash and unpaid utang.</Text>
+          <Text style={styles.infoText}>Enter the cash physically in the drawer. Compare only after considering starting cash and unpaid customer credit.</Text>
         </View>
         <FormField label="Actual cash counted" placeholder="₱0" value={actualCash} onChangeText={setActualCash} keyboardType="decimal-pad" inputMode="decimal" />
         {summary?.cashDifferenceCents !== null && summary?.cashDifferenceCents !== undefined ? (
@@ -137,7 +137,7 @@ export default function FinanceScreen() {
           <Text style={styles.label}>Category</Text>
           <View style={styles.chips}>
             {CATEGORIES.map((item) => (
-              <Pressable key={item} onPress={() => setCategory(item)} style={[styles.chip, category === item && styles.chipActive]}>
+              <Pressable key={item} accessibilityRole="button" accessibilityState={{ selected: category === item }} accessibilityLabel={`Expense category ${item}`} onPress={() => setCategory(item)} style={[styles.chip, category === item && styles.chipActive]}>
                 <Text style={[styles.chipText, category === item && styles.chipTextActive]}>{item}</Text>
               </Pressable>
             ))}
@@ -158,8 +158,8 @@ export default function FinanceScreen() {
               <Text style={styles.helper}>{expense.category} · {formatDate(expense.businessDate, { month: 'short', day: 'numeric' })}</Text>
             </View>
             <Text style={styles.expenseAmount}>{formatMoney(expense.amountCents)}</Text>
-            <Pressable accessibilityLabel={`Edit ${expense.description}`} onPress={() => edit(expense)} style={styles.iconButton}><MaterialCommunityIcons name="pencil-outline" size={21} color={colors.forest} /></Pressable>
-            <Pressable accessibilityLabel={`Delete ${expense.description}`} onPress={() => remove(expense)} style={styles.iconButton}><MaterialCommunityIcons name="trash-can-outline" size={21} color={colors.danger} /></Pressable>
+            <Pressable accessibilityRole="button" accessibilityLabel={`Edit ${expense.description}`} onPress={() => edit(expense)} style={styles.iconButton}><MaterialCommunityIcons name="pencil-outline" size={21} color={colors.forest} /></Pressable>
+            <Pressable accessibilityRole="button" accessibilityLabel={`Delete ${expense.description}`} onPress={() => remove(expense)} style={styles.iconButton}><MaterialCommunityIcons name="trash-can-outline" size={21} color={colors.danger} /></Pressable>
           </Card>
         )) : <EmptyState icon="cash-minus" title="No expenses yet" message="Record store expenses to see profit after expenses." />}
       </View>
@@ -184,22 +184,22 @@ const styles = StyleSheet.create({
   divider: { height: 1, backgroundColor: colors.sage },
   form: { gap: spacing.md },
   cashCount: { gap: spacing.md },
-  infoText: { color: colors.muted, fontSize: 13, lineHeight: 19, marginTop: spacing.xs },
+  infoText: { color: colors.muted, fontSize: 14, lineHeight: 20, marginTop: spacing.xs },
   difference: { color: colors.forest, fontSize: 15, fontWeight: '800' },
   negative: { color: colors.danger },
   sectionTitle: { color: colors.text, fontSize: 20, fontWeight: '800' },
   label: { color: colors.text, fontSize: 16, fontWeight: '600' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  chip: { minHeight: 38, justifyContent: 'center', paddingHorizontal: spacing.md, borderRadius: radii.pill, borderWidth: 1, borderColor: colors.border },
+  chip: { minHeight: 46, justifyContent: 'center', paddingHorizontal: spacing.md, borderRadius: radii.pill, borderWidth: 1, borderColor: colors.border },
   chipActive: { backgroundColor: colors.forest, borderColor: colors.forest },
-  chipText: { color: colors.text, fontSize: 13, fontWeight: '700' },
+  chipText: { color: colors.text, fontSize: 14, fontWeight: '700' },
   chipTextActive: { color: colors.white },
   list: { gap: spacing.sm },
   expenseRow: { padding: spacing.sm, flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   expenseIcon: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.amberSoft, alignItems: 'center', justifyContent: 'center' },
   grow: { flex: 1 },
   expenseName: { color: colors.text, fontSize: 16, fontWeight: '800' },
-  helper: { color: colors.muted, fontSize: 12, marginTop: 3 },
+  helper: { color: colors.muted, fontSize: 14, marginTop: 3 },
   expenseAmount: { color: colors.text, fontSize: 16, fontWeight: '900' },
-  iconButton: { width: 40, height: 44, alignItems: 'center', justifyContent: 'center' },
+  iconButton: { width: 46, height: 46, alignItems: 'center', justifyContent: 'center' },
 });

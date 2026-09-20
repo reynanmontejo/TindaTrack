@@ -1,7 +1,7 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { AppScreen } from '@/components/AppScreen';
 import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/EmptyState';
@@ -14,6 +14,8 @@ type PeriodDays = 7 | 30 | 90;
 
 export default function InsightsScreen() {
   const { service, revision } = useAppData();
+  const { width, fontScale } = useWindowDimensions();
+  const compactLayout = width < 390 || fontScale > 1.15;
   const [days, setDays] = useState<PeriodDays>(7);
   const [data, setData] = useState<InsightsData | null>(null);
 
@@ -42,8 +44,8 @@ export default function InsightsScreen() {
 
   const max = Math.max(...bars.map((item) => item.totalCents), 1);
   const insightMessage = data?.highestDay
-    ? `Your sales were strongest on ${formatDayName(data.highestDay.date)}. Consider preparing extra stock before similar busy days.`
-    : 'Record sales regularly to see your strongest and quietest days.';
+    ? `${formatDayName(data.highestDay.date)} had your highest sales. Consider preparing extra stock before similar busy days.`
+    : 'Record sales regularly to see your busiest and quietest days.';
 
   return (
     <AppScreen>
@@ -87,7 +89,7 @@ export default function InsightsScreen() {
       {(data?.totalSalesCents ?? 0) > 0 ? (
         <Card style={styles.chartCard}>
           <Text style={styles.chartTitle}>{days === 7 ? 'Sales by Day' : 'Sales Over Time'}</Text>
-          <View style={styles.chart} accessibilityLabel="Sales bar chart">
+          <View accessible accessibilityRole="summary" style={styles.chart} accessibilityLabel={`Sales over the selected ${days} day period`}>
             {bars.map((item, index) => (
               <View key={`${item.date}-${index}`} style={styles.barColumn}>
                 <Text style={styles.barValue} numberOfLines={1}>{item.totalCents ? formatMoney(item.totalCents) : '₱0'}</Text>
@@ -103,16 +105,16 @@ export default function InsightsScreen() {
         <EmptyState icon="chart-bar" title="Not enough sales data yet" message="Insights will appear automatically after you record sales." />
       )}
 
-      <View style={styles.factRow}>
+      <View style={[styles.factRow, compactLayout && styles.stack]}>
         <Card style={styles.factCard}>
           <MaterialCommunityIcons name="trophy-outline" size={28} color={colors.forest} />
-          <Text style={styles.factLabel}>Highest sales day</Text>
+          <Text style={styles.factLabel}>Busiest sales day</Text>
           <Text style={styles.factDay}>{data?.highestDay ? formatDayName(data.highestDay.date) : '—'}</Text>
           <Text style={styles.factValue}>{data?.highestDay ? formatMoney(data.highestDay.totalCents) : 'No sales'}</Text>
         </Card>
         <Card style={styles.factCard}>
           <MaterialCommunityIcons name="arrow-down-circle-outline" size={28} color={colors.amber} />
-          <Text style={styles.factLabel}>Lowest sales day</Text>
+          <Text style={styles.factLabel}>Quietest sales day</Text>
           <Text style={styles.factDay}>{data?.lowestDay ? formatDayName(data.lowestDay.date) : '—'}</Text>
           <Text style={styles.factValue}>{data?.lowestDay ? formatMoney(data.lowestDay.totalCents) : 'No sales'}</Text>
         </Card>
@@ -125,7 +127,7 @@ export default function InsightsScreen() {
       <Card style={styles.average}>
         <MaterialCommunityIcons name="chart-box-outline" size={29} color={colors.forest} />
         <View style={styles.grow}>
-          <Text style={styles.factLabel}>Average per calendar day</Text>
+          <Text style={styles.factLabel}>Average sales per day</Text>
           <Text style={styles.averageValue}>{formatMoney(data?.averagePerDayCents ?? 0)}</Text>
         </View>
         <Text style={[styles.change, (data?.changePercent ?? 0) < 0 && styles.down]}>
@@ -140,7 +142,7 @@ export default function InsightsScreen() {
         detail={(item) => `${item.unitsSold} sold · ${formatMoney(item.revenueCents)} sales · ${formatMoney(item.profitCents)} profit`}
       />
       <ProductInsightList
-        title="Slow-moving products"
+        title="Products selling slowly"
         icon="snail"
         items={data?.slowProducts ?? []}
         empty="No stocked products to review."
@@ -200,13 +202,14 @@ const styles = StyleSheet.create({
   chartTitle: { color: colors.text, fontSize: 18, fontWeight: '800' },
   chart: { height: 195, flexDirection: 'row', alignItems: 'flex-end', gap: 4 },
   barColumn: { flex: 1, height: '100%', alignItems: 'center', justifyContent: 'flex-end', gap: 4 },
-  barValue: { color: colors.muted, fontSize: 9, width: '100%', textAlign: 'center' },
+  barValue: { color: colors.muted, fontSize: 12, width: '100%', textAlign: 'center' },
   barTrack: { flex: 1, width: '70%', justifyContent: 'flex-end' },
   bar: { width: '100%', backgroundColor: colors.green, borderTopLeftRadius: 5, borderTopRightRadius: 5, minHeight: 2 },
-  barLabel: { color: colors.text, fontSize: 10, textAlign: 'center' },
+  barLabel: { color: colors.text, fontSize: 12, textAlign: 'center' },
   factRow: { flexDirection: 'row', gap: spacing.sm },
+  stack: { flexDirection: 'column' },
   factCard: { flex: 1, gap: 3, padding: spacing.md },
-  factLabel: { color: colors.muted, fontSize: 12 },
+  factLabel: { color: colors.muted, fontSize: 14 },
   factDay: { color: colors.text, fontSize: 16, fontWeight: '800' },
   factValue: { color: colors.forest, fontSize: 17, fontWeight: '900' },
   tip: { backgroundColor: colors.mint, borderColor: colors.sage, flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
@@ -216,7 +219,7 @@ const styles = StyleSheet.create({
   averageValue: { color: colors.text, fontSize: 21, fontWeight: '900' },
   change: { color: colors.forest, fontSize: 15, fontWeight: '800' },
   down: { color: colors.amber },
-  disclaimer: { color: colors.muted, fontSize: 12, lineHeight: 17, textAlign: 'center' },
+  disclaimer: { color: colors.muted, fontSize: 14, lineHeight: 20, textAlign: 'center' },
   productInsights: { gap: spacing.sm },
   productInsightHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   productInsightTitle: { color: colors.text, fontSize: 18, fontWeight: '800' },
@@ -225,5 +228,5 @@ const styles = StyleSheet.create({
   rank: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.mint },
   rankText: { color: colors.forest, fontSize: 13, fontWeight: '900' },
   productName: { color: colors.text, fontSize: 15, fontWeight: '800' },
-  productDetail: { color: colors.muted, fontSize: 12, lineHeight: 17, marginTop: 2 },
+  productDetail: { color: colors.muted, fontSize: 14, lineHeight: 20, marginTop: 2 },
 });

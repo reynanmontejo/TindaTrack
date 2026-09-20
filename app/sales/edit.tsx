@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
   remove: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   summary: { backgroundColor: colors.mint, borderColor: colors.sage, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   summaryLabel: { color: colors.text, fontSize: 16, fontWeight: '800' },
-  summaryHelp: { color: colors.muted, fontSize: 12, marginTop: 3 },
+  summaryHelp: { color: colors.muted, fontSize: 14, marginTop: 3 },
   total: { color: colors.forest, fontSize: 27, fontWeight: '900' },
   disabled: { opacity: 0.4 },
   pressed: { opacity: 0.7 },

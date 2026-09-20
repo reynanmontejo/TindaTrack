@@ -1,7 +1,7 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { AppButton } from '@/components/AppButton';
 import { AppScreen } from '@/components/AppScreen';
 import { Card } from '@/components/Card';
@@ -13,6 +13,8 @@ import { formatDate, formatMoney, localDateKey } from '@/utils';
 
 export default function DailyNoteScreen() {
   const { service, revision, saveDailyNote } = useAppData();
+  const { width, fontScale } = useWindowDimensions();
+  const compactLayout = width < 390 || fontScale > 1.15;
   const today = localDateKey();
   const [summary, setSummary] = useState<DailySummary | null>(null);
   const [pastDays, setPastDays] = useState<DaySummary[]>([]);
@@ -55,18 +57,18 @@ export default function DailyNoteScreen() {
         <Text style={styles.date}>{formatDate(today)}</Text>
       </View>
 
-      <Card style={styles.summary}>
-        <View style={styles.metric}>
+      <Card style={[styles.summary, compactLayout && styles.summaryStack]}>
+        <View style={[styles.metric, compactLayout && styles.metricCompact]}>
           <MaterialCommunityIcons name="cash" size={23} color={colors.forest} />
           <Text style={styles.metricLabel}>Today’s Sales</Text>
           <Text style={styles.metricValue}>{formatMoney(summary?.totalSalesCents ?? 0)}</Text>
         </View>
-        <View style={styles.metric}>
+        <View style={[styles.metric, compactLayout && styles.metricCompact]}>
           <MaterialCommunityIcons name="wallet-outline" size={23} color={colors.forest} />
           <Text style={styles.metricLabel}>Estimated Profit</Text>
           <Text style={styles.metricValue}>{formatMoney(summary?.estimatedProfitCents ?? 0)}</Text>
         </View>
-        <View style={styles.metric}>
+        <View style={[styles.metric, compactLayout && styles.metricCompact]}>
           <MaterialCommunityIcons name="package-variant" size={23} color={colors.forest} />
           <Text style={styles.metricLabel}>Items Sold</Text>
           <Text style={styles.metricValue}>{summary?.itemsSold ?? 0}</Text>
@@ -115,8 +117,10 @@ const styles = StyleSheet.create({
   title: { fontSize: 29, lineHeight: 35, fontWeight: '900', color: colors.text },
   date: { color: colors.forest, fontSize: 17, fontWeight: '700', marginTop: spacing.xs },
   summary: { backgroundColor: colors.mint, borderColor: colors.sage, flexDirection: 'row', paddingHorizontal: spacing.sm },
+  summaryStack: { flexDirection: 'column', alignItems: 'stretch' },
   metric: { flex: 1, minHeight: 118, alignItems: 'center', justifyContent: 'center', gap: 3, paddingHorizontal: 4 },
-  metricLabel: { color: colors.text, fontSize: 12, lineHeight: 16, textAlign: 'center' },
+  metricCompact: { minHeight: 78, borderBottomWidth: 1, borderBottomColor: colors.sage },
+  metricLabel: { color: colors.text, fontSize: 14, lineHeight: 19, textAlign: 'center' },
   metricValue: { color: colors.forest, fontSize: 19, fontWeight: '900', textAlign: 'center' },
   noteGroup: { gap: spacing.sm },
   sectionTitle: { color: colors.text, fontSize: 20, fontWeight: '800' },
@@ -125,7 +129,7 @@ const styles = StyleSheet.create({
   dayRow: { minHeight: 65, paddingHorizontal: spacing.md, borderRadius: radii.md, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   dayDate: { flex: 1, color: colors.text, fontSize: 15, fontWeight: '700' },
   dayTotal: { color: colors.text, fontSize: 15, fontWeight: '800' },
-  view: { color: colors.forest, fontSize: 12, fontWeight: '700' },
+  view: { color: colors.forest, fontSize: 14, fontWeight: '700' },
   emptyPast: { color: colors.muted, fontSize: 15, lineHeight: 22, paddingVertical: spacing.md },
   pressed: { opacity: 0.72 },
 });

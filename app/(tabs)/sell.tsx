@@ -9,7 +9,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { ProductAvatar } from '@/components/ProductAvatar';
 import { QuantityStepper } from '@/components/QuantityStepper';
 import { useAppData } from '@/data/AppDataContext';
-import { colors, radii, spacing } from '@/theme';
+import { colors, radii, shadows, spacing } from '@/theme';
 import type { Product } from '@/types';
 import { formatMoney } from '@/utils';
 
@@ -41,7 +41,8 @@ export default function SellScreen() {
   };
 
   return (
-    <AppScreen contentContainerStyle={styles.content}>
+    <View style={styles.screen}>
+      <AppScreen contentContainerStyle={[styles.content, cartCount > 0 && styles.contentWithCart]}>
       <View>
         <Text style={styles.title}>Sell Products</Text>
         <Text style={styles.subtitle}>Choose products, then set the quantity with the + and − buttons.</Text>
@@ -129,8 +130,9 @@ export default function SellScreen() {
         </View>
       )}
 
+      </AppScreen>
       {cartCount > 0 ? (
-        <View style={styles.cartBar}>
+        <View accessibilityRole="summary" accessibilityLabel={`${cartCount} items in this sale, total ${formatMoney(cartTotalCents)}`} style={styles.cartBar}>
           <View style={styles.cartInfo}>
             <MaterialCommunityIcons name="cart-outline" size={25} color={colors.forest} />
             <View>
@@ -138,15 +140,17 @@ export default function SellScreen() {
               <Text style={styles.cartTotal}>{formatMoney(cartTotalCents)}</Text>
             </View>
           </View>
-          <AppButton label="Review & Confirm" icon="arrow-right" onPress={() => router.push('/sales/cart')} style={styles.viewButton} />
+          <AppButton label="Review Sale" icon="arrow-right" accessibilityHint="Check products and confirm this sale" onPress={() => router.push('/sales/cart')} style={styles.viewButton} />
         </View>
       ) : null}
-    </AppScreen>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { paddingBottom: 36 },
+  screen: { flex: 1 },
+  content: { paddingBottom: 104 },
+  contentWithCart: { paddingBottom: 132 },
   title: { fontSize: 29, lineHeight: 35, fontWeight: '900', color: colors.text },
   subtitle: { color: colors.muted, fontSize: 15, lineHeight: 21, marginTop: spacing.xs },
   search: { minHeight: 52, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.md, borderRadius: radii.md, backgroundColor: colors.white, borderWidth: 1.5, borderColor: colors.border },
@@ -159,18 +163,18 @@ const styles = StyleSheet.create({
   grow: { flex: 1 },
   productName: { color: colors.text, fontSize: 17, fontWeight: '800' },
   productInfo: { color: colors.muted, fontSize: 14, marginTop: 2 },
-  added: { color: colors.forest, fontSize: 13, fontWeight: '700', marginTop: 3 },
+  added: { color: colors.forest, fontSize: 14, fontWeight: '700', marginTop: 3 },
   addButton: { minWidth: 76, minHeight: 48, flexDirection: 'row', gap: 3, alignItems: 'center', justifyContent: 'center', borderRadius: radii.sm, borderWidth: 1.5, borderColor: colors.forest, paddingHorizontal: spacing.sm },
   addText: { color: colors.forest, fontSize: 16, fontWeight: '800' },
   unavailable: { borderColor: colors.border, backgroundColor: '#F0F2F0' },
-  unavailableText: { color: colors.muted, fontSize: 12, fontWeight: '600' },
+  unavailableText: { color: colors.muted, fontSize: 14, fontWeight: '600' },
   quantityRow: { borderTopWidth: 1, borderTopColor: colors.sage, paddingTop: spacing.sm, flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   quantityLabel: { flex: 1, color: colors.text, fontSize: 15, fontWeight: '700' },
   remove: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   pressed: { opacity: 0.7 },
-  cartBar: { padding: spacing.md, backgroundColor: colors.mint, borderRadius: radii.md, borderWidth: 1, borderColor: colors.sage, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md },
+  cartBar: { position: 'absolute', left: spacing.md, right: spacing.md, bottom: spacing.sm, zIndex: 20, minHeight: 74, padding: spacing.sm, backgroundColor: colors.mint, borderRadius: radii.md, borderWidth: 1, borderColor: colors.sage, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm, ...shadows.floating },
   cartInfo: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  cartCount: { color: colors.muted, fontSize: 13 },
+  cartCount: { color: colors.muted, fontSize: 14 },
   cartTotal: { color: colors.forest, fontSize: 20, fontWeight: '900' },
-  viewButton: { minWidth: 128 },
+  viewButton: { minWidth: 132 },
 });

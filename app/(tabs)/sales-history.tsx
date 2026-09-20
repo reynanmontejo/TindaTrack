@@ -5,7 +5,6 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { AppScreen } from '@/components/AppScreen';
 import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/EmptyState';
-import { QuickActionFab } from '@/components/QuickActionFab';
 import { ProductAvatar } from '@/components/ProductAvatar';
 import { useAppData } from '@/data/AppDataContext';
 import { colors, radii, spacing } from '@/theme';
@@ -101,10 +100,6 @@ export default function SalesHistoryScreen() {
           <EmptyState icon="receipt-text-outline" title="No sales in this period" message="Completed sales will appear here automatically." />
         )}
       </AppScreen>
-      <QuickActionFab
-        onAddSale={() => router.push('/(tabs)/sell')}
-        onAddStock={() => router.push('/stock/add')}
-      />
     </View>
   );
 }
@@ -129,7 +124,7 @@ const styles = StyleSheet.create({
   grow: { flex: 1 },
   time: { color: colors.muted, fontSize: 13 },
   saleName: { color: colors.text, fontSize: 16, fontWeight: '800' },
-  helper: { color: colors.muted, fontSize: 12 },
+  helper: { color: colors.muted, fontSize: 14 },
   amount: { color: colors.text, fontSize: 17, fontWeight: '900' },
   pressed: { opacity: 0.72 },
 });

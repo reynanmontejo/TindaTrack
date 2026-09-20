@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   negativeIcon: { backgroundColor: colors.amberSoft },
   grow: { flex: 1 },
   rowTitle: { color: colors.text, fontSize: 16, fontWeight: '800' },
-  helper: { color: colors.muted, fontSize: 12, lineHeight: 17 },
+  helper: { color: colors.muted, fontSize: 14, lineHeight: 20 },
   numbers: { alignItems: 'flex-end', gap: 2 },
   stockRange: { color: colors.muted, fontSize: 13 },
   quantity: { color: colors.forest, fontSize: 17, fontWeight: '900' },

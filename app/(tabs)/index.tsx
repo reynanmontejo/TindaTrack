@@ -1,11 +1,10 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { AppScreen } from '@/components/AppScreen';
 import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/EmptyState';
-import { QuickActionFab } from '@/components/QuickActionFab';
 import { MetricCard } from '@/components/MetricCard';
 import { ProductAvatar } from '@/components/ProductAvatar';
 import { SectionHeader } from '@/components/SectionHeader';
@@ -16,6 +15,8 @@ import { formatDayName, formatMoney, formatTime, greetingForNow } from '@/utils'
 
 export default function HomeScreen() {
   const { service, revision, storeName } = useAppData();
+  const { width, fontScale } = useWindowDimensions();
+  const compactLayout = width < 390 || fontScale > 1.15;
   const [data, setData] = useState<DashboardData | null>(null);
 
   const load = useCallback(() => {
@@ -30,7 +31,7 @@ export default function HomeScreen() {
   return (
     <View style={styles.flex}>
       <AppScreen contentContainerStyle={styles.content}>
-        <View style={styles.topRow}>
+        <View style={[styles.topRow, compactLayout && styles.stack]}>
           <View style={styles.headingWrap}>
             <Text style={styles.greeting}>{greetingForNow()} 👋</Text>
             <Text style={styles.title}>Here’s your store today</Text>
@@ -47,7 +48,7 @@ export default function HomeScreen() {
           </Pressable>
         </View>
 
-        <View style={styles.metrics}>
+        <View style={[styles.metrics, compactLayout && styles.stack]}>
           <MetricCard label="Today’s Sales" value={formatMoney(data?.totalSalesCents ?? 0)} icon="cash" />
           <MetricCard label="Estimated Profit" value={formatMoney(data?.estimatedProfitCents ?? 0)} icon="wallet-outline" />
         </View>
@@ -69,19 +70,6 @@ export default function HomeScreen() {
           </View>
           <MaterialCommunityIcons name="chevron-right" size={26} color={colors.forest} />
         </Pressable>
-
-        <View style={styles.toolsRow}>
-          <Pressable accessibilityRole="button" accessibilityLabel="Open expenses and cash summary" onPress={() => router.push('/finance')} style={({ pressed }) => [styles.toolCard, pressed && styles.pressed]}>
-            <View style={styles.toolIcon}><MaterialCommunityIcons name="cash-minus" size={25} color={colors.forest} /></View>
-            <Text style={styles.toolTitle}>Expenses & Cash</Text>
-            <Text style={styles.toolHelp}>See profit after expenses</Text>
-          </Pressable>
-          <Pressable accessibilityRole="button" accessibilityLabel="Open utang records" onPress={() => router.push('/utang')} style={({ pressed }) => [styles.toolCard, pressed && styles.pressed]}>
-            <View style={styles.toolIcon}><MaterialCommunityIcons name="account-cash-outline" size={25} color={colors.forest} /></View>
-            <Text style={styles.toolTitle}>Utang</Text>
-            <Text style={styles.toolHelp}>Track balances and payments</Text>
-          </Pressable>
-        </View>
 
         <View style={styles.sectionGap}>
           <SectionHeader title="Recent Sales" />
@@ -122,6 +110,26 @@ export default function HomeScreen() {
           )}
         </View>
 
+        <View style={styles.sectionGap}>
+          <SectionHeader title="Store Tools" />
+          <View style={[styles.toolsRow, compactLayout && styles.stack]}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Open expenses and cash summary" onPress={() => router.push('/finance')} style={({ pressed }) => [styles.toolCard, pressed && styles.pressed]}>
+              <View style={styles.toolIcon}><MaterialCommunityIcons name="cash-minus" size={25} color={colors.forest} /></View>
+              <View style={styles.grow}>
+                <Text style={styles.toolTitle}>Expenses & Cash</Text>
+                <Text style={styles.toolHelp}>See profit after expenses</Text>
+              </View>
+            </Pressable>
+            <Pressable accessibilityRole="button" accessibilityLabel="Open customer credit records" onPress={() => router.push('/utang')} style={({ pressed }) => [styles.toolCard, pressed && styles.pressed]}>
+              <View style={styles.toolIcon}><MaterialCommunityIcons name="account-cash-outline" size={25} color={colors.forest} /></View>
+              <View style={styles.grow}>
+                <Text style={styles.toolTitle}>Customer Credit</Text>
+                <Text style={styles.toolHelp}>Track balances and payments</Text>
+              </View>
+            </Pressable>
+          </View>
+        </View>
+
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="View this week's sales insights"
@@ -140,7 +148,7 @@ export default function HomeScreen() {
               ? 'No previous sales to compare yet'
               : `${data.weekChangePercent >= 0 ? '↑' : '↓'} ${Math.abs(data.weekChangePercent)}% ${data.weekChangePercent >= 0 ? 'higher' : 'lower'} than last week`}
           </Text>
-          <View style={styles.highLowRow}>
+          <View style={[styles.highLowRow, compactLayout && styles.stack]}>
             <Text style={styles.fact}>
               Highest: {data?.highestDay ? `${formatDayName(data.highestDay.date)} ${formatMoney(data.highestDay.totalCents)}` : '—'}
             </Text>
@@ -154,10 +162,6 @@ export default function HomeScreen() {
           </View>
         </Pressable>
       </AppScreen>
-      <QuickActionFab
-        onAddSale={() => router.push('/(tabs)/sell')}
-        onAddStock={() => router.push('/stock/add')}
-      />
     </View>
   );
 }
@@ -166,6 +170,7 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   content: { paddingBottom: 122 },
   topRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: spacing.md },
+  stack: { flexDirection: 'column' },
   headingWrap: { flex: 1 },
   greeting: { fontSize: 17, color: colors.forest, fontWeight: '600', marginBottom: spacing.xs },
   title: { fontSize: 27, lineHeight: 34, fontWeight: '900', color: colors.text },
@@ -188,10 +193,10 @@ const styles = StyleSheet.create({
   grow: { flex: 1 },
   alertTitle: { color: colors.text, fontSize: 16, fontWeight: '700' },
   toolsRow: { flexDirection: 'row', gap: spacing.sm },
-  toolCard: { flex: 1, minHeight: 126, padding: spacing.md, borderRadius: radii.md, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, justifyContent: 'center', gap: spacing.xs },
+  toolCard: { flex: 1, minHeight: 96, padding: spacing.md, borderRadius: radii.md, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, justifyContent: 'center', flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   toolIcon: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.mint, alignItems: 'center', justifyContent: 'center', marginBottom: spacing.xs },
   toolTitle: { color: colors.text, fontSize: 15, fontWeight: '800' },
-  toolHelp: { color: colors.muted, fontSize: 12, lineHeight: 17 },
+  toolHelp: { color: colors.muted, fontSize: 14, lineHeight: 20, marginTop: 2 },
   helper: { color: colors.muted, fontSize: 14, lineHeight: 19 },
   sectionGap: { gap: spacing.sm },
   list: { gap: spacing.sm },
@@ -216,6 +221,6 @@ const styles = StyleSheet.create({
   insightAmount: { color: colors.text, fontSize: 20, fontWeight: '900' },
   change: { color: colors.forest, fontSize: 14, fontWeight: '700' },
   highLowRow: { flexDirection: 'row', gap: spacing.sm, borderTopWidth: 1, borderColor: colors.sage, paddingTop: spacing.sm },
-  fact: { flex: 1, color: colors.text, fontSize: 13, lineHeight: 18 },
+  fact: { flex: 1, color: colors.text, fontSize: 14, lineHeight: 20 },
   pressed: { opacity: 0.78 },
 });

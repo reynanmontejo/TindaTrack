@@ -1,7 +1,8 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { usePathname } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { Keyboard, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useAppData } from '@/data/AppDataContext';
 import { colors, radii, shadows, spacing } from '@/theme';
 
 interface QuickActionFabProps {
@@ -10,16 +11,39 @@ interface QuickActionFabProps {
 }
 
 export function QuickActionFab({ onAddSale, onAddStock }: QuickActionFabProps) {
-  const insets = useSafeAreaInsets();
+  const pathname = usePathname();
+  const { cartCount } = useAppData();
   const [open, setOpen] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const showSubscription = Keyboard.addListener(showEvent, () => {
+      setOpen(false);
+      setKeyboardVisible(true);
+    });
+    const hideSubscription = Keyboard.addListener(hideEvent, () => setKeyboardVisible(false));
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   const run = (action: () => void) => {
     setOpen(false);
     action();
   };
 
+  if (keyboardVisible || (pathname.endsWith('/sell') && cartCount > 0)) return null;
+
   return (
-    <View pointerEvents="box-none" style={[styles.wrap, { bottom: Math.max(insets.bottom, 8) + 74 }]}>
+    <View pointerEvents="box-none" style={styles.wrap}>
       {open ? (
         <View accessibilityRole="menu" style={styles.menu}>
           <Pressable
@@ -56,16 +80,19 @@ export function QuickActionFab({ onAddSale, onAddStock }: QuickActionFabProps) {
         </View>
       ) : null}
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={open ? 'Close quick actions' : 'Open quick actions'}
-        accessibilityHint="Shows Add Sale and Add Stock"
-        accessibilityState={{ expanded: open }}
-        onPress={() => setOpen((value) => !value)}
-        style={({ pressed }) => [styles.fab, pressed && styles.fabPressed]}
-      >
-        <MaterialCommunityIcons name={open ? 'close' : 'plus'} size={31} color={colors.white} />
-      </Pressable>
+      <View style={styles.fabRow}>
+        {!open ? <Text pointerEvents="none" style={styles.addLabel}>Add</Text> : null}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={open ? 'Close quick actions' : 'Add sale or stock'}
+          accessibilityHint="Shows Add Sale and Add Stock"
+          accessibilityState={{ expanded: open }}
+          onPress={() => setOpen((value) => !value)}
+          style={({ pressed }) => [styles.fab, pressed && styles.fabPressed]}
+        >
+          <MaterialCommunityIcons name={open ? 'close' : 'plus'} size={31} color={colors.white} />
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -74,6 +101,7 @@ const styles = StyleSheet.create({
   wrap: {
     position: 'absolute',
     right: spacing.lg,
+    bottom: 78,
     zIndex: 30,
     alignItems: 'flex-end',
     gap: spacing.sm,
@@ -103,8 +131,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   actionTitle: { color: colors.text, fontSize: 16, fontWeight: '800' },
-  actionHelp: { color: colors.muted, fontSize: 12, marginTop: 2 },
+  actionHelp: { color: colors.muted, fontSize: 14, marginTop: 2 },
   divider: { height: 1, backgroundColor: colors.border, marginLeft: 66 },
+  fabRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  addLabel: { color: colors.forest, fontSize: 15, fontWeight: '800', backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, borderRadius: radii.pill, paddingHorizontal: spacing.md, paddingVertical: spacing.sm, ...shadows.card },
   fab: {
     width: 58,
     height: 58,

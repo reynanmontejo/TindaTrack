@@ -61,9 +61,9 @@ export default function UtangScreen() {
       else await service.addCredit(input);
       refreshData();
       resetForm();
-      Alert.alert(editingId ? 'Utang updated' : 'Utang saved');
+      Alert.alert(editingId ? 'Customer credit updated' : 'Customer credit saved');
     } catch (error) {
-      Alert.alert('Utang could not be saved', error instanceof Error ? error.message : 'Please try again.');
+      Alert.alert('Customer credit could not be saved', error instanceof Error ? error.message : 'Please try again.');
     } finally { setSaving(false); }
   };
 
@@ -88,7 +88,7 @@ export default function UtangScreen() {
   };
 
   const remove = (account: CreditAccount) => {
-    Alert.alert('Delete this utang record?', 'Its payment history will also be deleted.', [
+    Alert.alert('Delete this customer credit record?', 'Its payment history will also be deleted.', [
       { text: 'Keep', style: 'cancel' },
       { text: 'Delete', style: 'destructive', onPress: async () => { await service?.deleteCredit(account.id); setSelected(null); refreshData(); } },
     ]);
@@ -97,8 +97,8 @@ export default function UtangScreen() {
   return (
     <AppScreen>
       <View>
-        <Text style={styles.title}>Utang</Text>
-        <Text style={styles.subtitle}>Track names, balances, and partial payments simply.</Text>
+        <Text style={styles.title}>Customer Credit</Text>
+        <Text style={styles.subtitle}>Track money customers owe and record partial payments.</Text>
       </View>
       <Card style={styles.summary}>
         <Text style={styles.summaryLabel}>{filter === 'OPEN' ? 'Outstanding balance' : 'Balance in this list'}</Text>
@@ -107,21 +107,21 @@ export default function UtangScreen() {
       </Card>
       <View style={styles.filters}>
         {([['OPEN', 'Unpaid'], ['PAID', 'Paid'], ['ALL', 'All']] as const).map(([value, label]) => (
-          <Pressable key={value} onPress={() => { setFilter(value); setSelected(null); }} style={[styles.filter, filter === value && styles.filterActive]}>
+          <Pressable key={value} accessibilityRole="button" accessibilityState={{ selected: filter === value }} accessibilityLabel={`${label} customer credit records`} onPress={() => { setFilter(value); setSelected(null); }} style={[styles.filter, filter === value && styles.filterActive]}>
             <Text style={[styles.filterText, filter === value && styles.filterTextActive]}>{label}</Text>
           </Pressable>
         ))}
       </View>
-      {!showForm && !selected ? <AppButton label="Add Utang" icon="account-plus-outline" onPress={() => setShowForm(true)} /> : null}
+      {!showForm && !selected ? <AppButton label="Add Customer Credit" icon="account-plus-outline" onPress={() => setShowForm(true)} /> : null}
 
       {showForm ? (
         <Card style={styles.form}>
-          <Text style={styles.sectionTitle}>{editingId ? 'Edit Utang' : 'Add Utang'}</Text>
+          <Text style={styles.sectionTitle}>{editingId ? 'Edit Customer Credit' : 'Add Customer Credit'}</Text>
           <FormField label="Customer Name" placeholder="Example: Ana" value={name} onChangeText={setName} autoCapitalize="words" />
           <FormField label="Total Amount" placeholder="₱0" value={amount} onChangeText={setAmount} keyboardType="decimal-pad" inputMode="decimal" />
           <FormField label="Date" hint="Use YYYY-MM-DD" value={date} onChangeText={setDate} keyboardType="numbers-and-punctuation" />
           <FormField label="Note" placeholder="Example: Rice and canned goods" value={note} onChangeText={setNote} multiline />
-          <AppButton label={editingId ? 'Save Changes' : 'Save Utang'} icon="content-save-outline" onPress={save} loading={saving} />
+          <AppButton label={editingId ? 'Save Changes' : 'Save Customer Credit'} icon="content-save-outline" onPress={save} loading={saving} />
           <AppButton label="Cancel" variant="text" onPress={resetForm} />
         </Card>
       ) : null}
@@ -160,7 +160,7 @@ export default function UtangScreen() {
       ) : (
         <View style={styles.list}>
           {credits.length ? credits.map((account) => (
-            <Pressable key={account.id} onPress={() => view(account.id)} style={({ pressed }) => pressed && styles.pressed}>
+            <Pressable key={account.id} accessibilityRole="button" accessibilityLabel={`${account.customerName}, balance ${formatMoney(account.balanceCents)}, ${account.status === 'PAID' ? 'paid' : account.status === 'PARTIAL' ? 'partly paid' : 'unpaid'}. View details.`} onPress={() => view(account.id)} style={({ pressed }) => pressed && styles.pressed}>
               <Card style={styles.row}>
                 <View style={styles.avatar}><MaterialCommunityIcons name="account-outline" size={26} color={colors.forest} /></View>
                 <View style={styles.grow}><Text style={styles.name}>{account.customerName}</Text><Text style={styles.helper}>{formatDate(account.businessDate, { month: 'short', day: 'numeric' })} · {account.status === 'PAID' ? 'Paid' : account.status === 'PARTIAL' ? 'Partly paid' : 'Unpaid'}</Text></View>
@@ -168,7 +168,7 @@ export default function UtangScreen() {
                 <MaterialCommunityIcons name="chevron-right" size={22} color={colors.muted} />
               </Card>
             </Pressable>
-          )) : <EmptyState icon="account-cash-outline" title="No utang records" message={filter === 'OPEN' ? 'There are no unpaid balances.' : 'Utang records will appear here.'} />}
+          )) : <EmptyState icon="account-cash-outline" title="No customer credit records" message={filter === 'OPEN' ? 'There are no unpaid balances.' : 'Customer credit records will appear here.'} />}
         </View>
       )}
     </AppScreen>

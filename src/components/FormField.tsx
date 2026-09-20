@@ -32,5 +32,5 @@ const styles = StyleSheet.create({
     fontSize: 17,
   },
   multiline: { minHeight: 150, textAlignVertical: 'top', paddingTop: spacing.md },
-  hint: { color: colors.muted, fontSize: 13, lineHeight: 18 },
+  hint: { color: colors.muted, fontSize: 14, lineHeight: 20 },
 });

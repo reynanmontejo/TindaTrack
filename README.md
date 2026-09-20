@@ -4,12 +4,12 @@ TindaTrack is an offline-first inventory and sales notebook for small sari-sari 
 
 ## Android APK
 
-The latest installable Android build is included at [`release/TindaTrack-v1.1.0.apk`](release/TindaTrack-v1.1.0.apk).
+The latest installable Android build is included at [`release/TindaTrack-v1.1.1.apk`](release/TindaTrack-v1.1.1.apk).
 
-- Version: 1.1.0 (`versionCode` 2)
+- Version: 1.1.1 (`versionCode` 3)
 - Package: `com.tindatrack.app`
-- SHA-256: `9EFD174B3BDD0E1167344BAB31F7AF5708525930A18890E2012721602DB13E6D`
-- Signing: development/testing key; suitable for direct MVP testing, not a Google Play production release. It uses the same certificate as v1.0.0, so it can update an existing v1.0.0 installation.
+- SHA-256: `6606110763F60F376E6E4E3CD5E9F4761A835E6EF3AC0AF299AF5FBCBC313767`
+- Signing: development/testing key; suitable for direct MVP testing, not a Google Play production release. It uses the same certificate as v1.0.0 and v1.1.0, so it can update either existing installation.
 
 On an Android phone, download the APK, allow installation from the browser or file manager when prompted, and open the downloaded file.
 
@@ -24,13 +24,16 @@ On an Android phone, download the APK, allow installation from the browser or fi
 - Historical cost and selling-price snapshots
 - Sale confirmation, details, transactional editing, and undo with stock restoration
 - Home summary, recent sales, and a circular quick-action menu for Add Sale and Add Stock
+- Keyboard-responsive forms and a lower quick-add button across all primary pages
+- Persistent Review Sale bar, simpler stock filters, and progressive product options
+- Larger touch targets, responsive layouts, and clearer accessibility labels
 - Today, week, and month sales history
 - 7-day, 30-day, and 3-month sales insights
 - Highest day, lowest day, average sales, profit, and period comparison
 - Daily notes and past-day summaries
 - Offline SQLite persistence
 - Expense CRUD and daily profit-after-expenses summary
-- Basic utang records with partial payments and paid status
+- Customer Credit records with partial payments and paid status
 - Pack/tingi conversion for restocking and per-unit profit
 - Product categories, sorting, search, and hidden-product restore
 - JSON backup/restore with locally stored product photos included

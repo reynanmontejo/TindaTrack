@@ -27,7 +27,7 @@ export default function RootLayout() {
         <Stack.Screen name="sales/edit" options={{ title: 'Edit Sale' }} />
         <Stack.Screen name="stock/add" options={{ title: 'Choose Product' }} />
         <Stack.Screen name="finance" options={{ title: 'Expenses & Cash' }} />
-        <Stack.Screen name="utang" options={{ title: 'Utang' }} />
+        <Stack.Screen name="utang" options={{ title: 'Customer Credit' }} />
         <Stack.Screen name="usability-test" options={{ title: 'Usability Test' }} />
         <Stack.Screen name="products/add" options={{ title: 'Add Product' }} />
         <Stack.Screen name="products/hidden" options={{ title: 'Hidden Products' }} />

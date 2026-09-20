@@ -29,6 +29,7 @@ export function ProductForm({ initial, includeStartingStock, submitLabel, onSubm
   const [stock, setStock] = useState(initial ? String(initial.currentStock) : '');
   const [lowLevel, setLowLevel] = useState(initial ? String(initial.lowStockLevel) : '5');
   const [saving, setSaving] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(Boolean(initial));
 
   const savePickedImage = async (uri: string) => {
     try {
@@ -95,7 +96,7 @@ export function ProductForm({ initial, includeStartingStock, submitLabel, onSubm
       return;
     }
     if (!Number.isInteger(packSize) || packSize <= 0) {
-      Alert.alert('Check the pack quantity', 'Enter how many sellable units are inside one pack. Use 1 if you do not sell by tingi.');
+      Alert.alert('Check the pack quantity', 'Enter how many sellable units are inside one pack. Use 1 if you sell the product only as a single item.');
       return;
     }
     const purchaseCostCents = parseMoneyToCents(cost);
@@ -127,36 +128,53 @@ export function ProductForm({ initial, includeStartingStock, submitLabel, onSubm
 
   return (
     <View style={styles.form}>
+      <FormField label="Product Name" placeholder="Example: Coke Mismo" value={name} onChangeText={setName} autoCapitalize="words" />
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={imageUri ? 'Change Product Photo' : 'Add Product Photo, optional'}
-        onPress={choosePhoto}
-        style={({ pressed }) => [styles.photo, pressed && styles.pressed]}
+        accessibilityLabel={showAdvanced ? 'Hide more product options' : 'Show more product options'}
+        accessibilityState={{ expanded: showAdvanced }}
+        onPress={() => setShowAdvanced((value) => !value)}
+        style={({ pressed }) => [styles.moreOptions, pressed && styles.pressed]}
       >
-        {imageUri ? (
-          <Image source={{ uri: imageUri }} style={styles.image} />
-        ) : (
-          <MaterialCommunityIcons name="camera-plus-outline" size={34} color={colors.forest} />
-        )}
-        <Text style={styles.photoLabel}>{imageUri ? 'Change Product Photo' : 'Add Product Photo'}</Text>
-        <Text style={styles.optional}>Optional</Text>
-      </Pressable>
-
-      <FormField label="Product Name" placeholder="Example: Coke Mismo" value={name} onChangeText={setName} autoCapitalize="words" />
-      <FormField label="Category" placeholder="Example: Drinks" value={category} onChangeText={setCategory} autoCapitalize="words" hint="Optional. Helps organize a long product list." />
-      <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: usePackSetup }} onPress={() => setUsePackSetup((value) => !value)} style={styles.packToggle}>
-        <MaterialCommunityIcons name={usePackSetup ? 'checkbox-marked-circle' : 'checkbox-blank-circle-outline'} size={27} color={colors.forest} />
+        <MaterialCommunityIcons name="tune-variant" size={23} color={colors.forest} />
         <View style={styles.packToggleText}>
-          <Text style={styles.unitTitle}>I buy this in packs and sell it by tingi</Text>
-          <Text style={styles.unitHelp}>Example: buy one case, sell each bottle.</Text>
+          <Text style={styles.moreOptionsTitle}>{showAdvanced ? 'Hide More Options' : 'More Product Options'}</Text>
+          <Text style={styles.unitHelp}>Photo, category, pack setup, and low-stock alert</Text>
         </View>
+        <MaterialCommunityIcons name={showAdvanced ? 'chevron-up' : 'chevron-down'} size={24} color={colors.forest} />
       </Pressable>
-      {usePackSetup ? (
-        <View style={styles.unitCard}>
-          <Text style={styles.unitTitle}>Pack or tingi setup</Text>
-          <FormField label="What do you buy?" placeholder="pack, case, box" value={packName} onChangeText={setPackName} autoCapitalize="none" />
-          <FormField label="What do you sell?" placeholder="piece, bottle, sachet" value={unitName} onChangeText={setUnitName} autoCapitalize="none" />
-          <FormField label={`How many ${unitName || 'pieces'} are in one ${packName || 'pack'}?`} placeholder="1" value={unitsPerPack} onChangeText={(value) => setUnitsPerPack(value.replace(/[^0-9]/g, ''))} keyboardType="number-pad" inputMode="numeric" returnKeyType="done" />
+      {showAdvanced ? (
+        <View style={styles.advancedSection}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={imageUri ? 'Change Product Photo' : 'Add Product Photo, optional'}
+            onPress={choosePhoto}
+            style={({ pressed }) => [styles.photo, pressed && styles.pressed]}
+          >
+            {imageUri ? (
+              <Image source={{ uri: imageUri }} style={styles.image} />
+            ) : (
+              <MaterialCommunityIcons name="camera-plus-outline" size={34} color={colors.forest} />
+            )}
+            <Text style={styles.photoLabel}>{imageUri ? 'Change Product Photo' : 'Add Product Photo'}</Text>
+            <Text style={styles.optional}>Optional</Text>
+          </Pressable>
+          <FormField label="Category" placeholder="Example: Drinks" value={category} onChangeText={setCategory} autoCapitalize="words" hint="Optional. Helps organize a long product list." />
+          <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: usePackSetup }} onPress={() => setUsePackSetup((value) => !value)} style={styles.packToggle}>
+            <MaterialCommunityIcons name={usePackSetup ? 'checkbox-marked-circle' : 'checkbox-blank-circle-outline'} size={27} color={colors.forest} />
+            <View style={styles.packToggleText}>
+              <Text style={styles.unitTitle}>I buy this in packs and sell single pieces</Text>
+              <Text style={styles.unitHelp}>Example: buy one case, sell each bottle.</Text>
+            </View>
+          </Pressable>
+          {usePackSetup ? (
+            <View style={styles.unitCard}>
+              <Text style={styles.unitTitle}>Pack and piece setup</Text>
+              <FormField label="What do you buy?" placeholder="pack, case, box" value={packName} onChangeText={setPackName} autoCapitalize="none" />
+              <FormField label="What do you sell?" placeholder="piece, bottle, sachet" value={unitName} onChangeText={setUnitName} autoCapitalize="none" />
+              <FormField label={`How many ${unitName || 'pieces'} are in one ${packName || 'pack'}?`} placeholder="1" value={unitsPerPack} onChangeText={(value) => setUnitsPerPack(value.replace(/[^0-9]/g, ''))} keyboardType="number-pad" inputMode="numeric" returnKeyType="done" />
+            </View>
+          ) : null}
         </View>
       ) : null}
       <FormField label={usePackSetup ? `I bought one ${packName || 'pack'} for` : 'I bought it for'} placeholder="₱0" value={cost} onChangeText={setCost} keyboardType="decimal-pad" inputMode="decimal" returnKeyType="done" hint={usePackSetup ? `The app calculates the cost for each ${unitName || 'piece'} automatically.` : 'Cost for one item'} />
@@ -164,7 +182,7 @@ export function ProductForm({ initial, includeStartingStock, submitLabel, onSubm
       {includeStartingStock ? (
         <FormField label="How many do I have?" placeholder="0" value={stock} onChangeText={setStock} keyboardType="number-pad" inputMode="numeric" returnKeyType="done" />
       ) : null}
-      <FormField label="Tell me when only this many are left" placeholder="5" value={lowLevel} onChangeText={setLowLevel} keyboardType="number-pad" inputMode="numeric" returnKeyType="done" hint="This creates the Running Low warning." />
+      {showAdvanced ? <FormField label="Tell me when only this many are left" placeholder="5" value={lowLevel} onChangeText={setLowLevel} keyboardType="number-pad" inputMode="numeric" returnKeyType="done" hint="This creates the Running Low warning." /> : null}
       <AppButton label={submitLabel} icon="content-save-outline" onPress={submit} loading={saving} />
       <Text style={styles.footer}>You can change these details later.</Text>
     </View>
@@ -173,15 +191,18 @@ export function ProductForm({ initial, includeStartingStock, submitLabel, onSubm
 
 const styles = StyleSheet.create({
   form: { gap: spacing.lg },
+  advancedSection: { gap: spacing.lg },
+  moreOptions: { minHeight: 64, padding: spacing.md, flexDirection: 'row', alignItems: 'center', gap: spacing.md, borderRadius: radii.md, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white },
+  moreOptionsTitle: { color: colors.forest, fontSize: 16, fontWeight: '800' },
   unitCard: { gap: spacing.md, padding: spacing.md, borderRadius: radii.md, backgroundColor: colors.mint, borderWidth: 1, borderColor: colors.sage },
   packToggle: { minHeight: 70, padding: spacing.md, flexDirection: 'row', alignItems: 'center', gap: spacing.md, borderRadius: radii.md, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white },
   packToggleText: { flex: 1, gap: 2 },
   unitTitle: { color: colors.text, fontSize: 17, fontWeight: '800' },
-  unitHelp: { color: colors.muted, fontSize: 13, lineHeight: 18 },
+  unitHelp: { color: colors.muted, fontSize: 14, lineHeight: 20 },
   photo: { alignSelf: 'center', width: 160, height: 150, borderRadius: radii.md, borderWidth: 1.5, borderStyle: 'dashed', borderColor: colors.sage, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center', gap: spacing.xs, overflow: 'hidden' },
   image: { position: 'absolute', width: '100%', height: '100%' },
   photoLabel: { color: colors.forest, fontSize: 15, fontWeight: '700', backgroundColor: 'rgba(255,255,255,0.88)', paddingHorizontal: spacing.sm, paddingVertical: 3, borderRadius: radii.sm },
-  optional: { color: colors.muted, fontSize: 12, backgroundColor: 'rgba(255,255,255,0.88)', paddingHorizontal: spacing.xs },
-  footer: { color: colors.muted, fontSize: 13, textAlign: 'center' },
+  optional: { color: colors.muted, fontSize: 14, backgroundColor: 'rgba(255,255,255,0.88)', paddingHorizontal: spacing.xs },
+  footer: { color: colors.muted, fontSize: 14, textAlign: 'center' },
   pressed: { opacity: 0.72 },
 });
